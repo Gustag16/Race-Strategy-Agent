@@ -6,6 +6,7 @@ limite_desgaste(6).  % limite máximo de desgaste dos pneus permitido por segura
 
 % obstáculos: cone(Linha, Faixa). retardatario(Linha, Faixa). agua(Linha, Faixa).
 cone(3, 2).
+cone(3, 3).
 cone(6, 3).
 retardatario(5, 1).
 retardatario(7, 2).
@@ -17,7 +18,7 @@ agua(5, 3).
 
 % configuração do pit lane (coluna 4)
 entrada_pit(2).   % linha onde é permitido entrar no box (a partir da faixa 3)
-saida_pit(4).     % linha onde o carro retorna do box para a pista
+saida_pit(5).     % linha onde o carro retorna do box para a pista
 
 % SENSORES DE PROGRESSO, SEGURANÇA E CUSTO (TEMPO)
 % o estado do agente é representado por estado(Linha, Faixa, TipoPneu, Desgaste)
@@ -108,6 +109,12 @@ sucessor(estado(L, 4, Pneu, Desg), sair_pit(3), 2, estado(NovaL, 3, Pneu, NovoDe
 % ATUADOR 6: aguardar (permanece na posição atual consumindo tempo)
 sucessor(estado(L, F, Pneu, Desg), aguardar, 3, estado(L, F, Pneu, Desg)) :-
     F \= 4.
+
+% ATUADOR EXTRA: avancar_pit (permite percorrer um Pit Lane de comprimento maior que 2)
+sucessor(estado(L, 4, Pneu, Desg), avancar_pit, 2, estado(NovaL, 4, Pneu, Desg)) :-
+    NovaL is L + 1,
+    saida_pit(LinhaSaida),
+    NovaL < LinhaSaida. % Avança pela coluna 4 até chegar na linha anterior à saída
 
 % MOTOR DE BUSCA A*
 % estrutura do nó na fila: no(F, G, EstadoAtual, CaminhoReverso)
@@ -227,6 +234,7 @@ traduzir_acao(entrar_pit) :- writeln('Entra no Pit Lane (Coluna 4).').
 traduzir_acao(trocar_pneus(T)) :- format('Realiza Pit Stop: troca para pneus de ~w (desgaste zerado).~n', [T]).
 traduzir_acao(sair_pit(F)) :- format('Sai do Pit Lane retornando para a faixa ~w.~n', [F]).
 traduzir_acao(aguardar) :- writeln('Aguarda na posicao atual.').
+traduzir_acao(avancar_pit) :- writeln('Avanca pelo Pit Lane (coluna 4).').
 
 % predicado principal para testar no SWI-Prolog: ?- iniciar.
 iniciar :-
